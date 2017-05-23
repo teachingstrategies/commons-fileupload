@@ -469,6 +469,31 @@ public class MultipartStream {
                 nextChunk = false;
             } else if (arrayequals(marker, FIELD_SEPARATOR, 2)) {
                 nextChunk = true;
+              
+                // PATCH FOR MOBILE BUG!!!!
+                // read ahead looking for --\r\n to check for existing mobile bug
+                // it's safe to do this because either:
+                //   a) it's a new item which will be more than 4 bytes to account for the next boundary or
+                //   b) it's going to be the broken ending
+              
+                byte[] readAheadDashes = new byte[2];
+                readAheadDashes[0] = readByte();
+                readAheadDashes[1] = readByte();
+              
+                byte[] readAheadNewlines = new byte[2];
+                readAheadNewlines[0] = readByte();
+                readAheadNewlines[1] = readByte();
+              
+                if (arrayequals(readAheadDashes, STREAM_TERMINATOR, 2) && arrayequals(readAheadNewlines, FIELD_SEPARATOR, 2)) {
+                  nextChunk = false;
+                }
+                else {
+                  // it's not the bug case, so push the head back to re-read the content
+                  head -= 4;
+                }
+              
+                // END PATCH FOR MOBILE BUG!!!
+              
             } else {
                 throw new MalformedStreamException(
                 "Unexpected characters follow a boundary");
