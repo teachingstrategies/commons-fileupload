@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 
-group = 'ts-commons-fileupload-patch'
+group = 'commons-fileupload'
 version = '1.2.1'
 
 description = """Commons FileUpload"""
@@ -41,6 +41,7 @@ dependencies {
 }
 
 task patch(type: Jar, dependsOn: 'classes') {
+  baseName = "_ts-"+project.group+"-patch"
   from("build/classes/main") {
     include "org/apache/commons/fileupload/Multipart*"
   }
